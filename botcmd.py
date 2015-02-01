@@ -23,7 +23,16 @@ def geturls(message):
 	return urls
 
 def unhtmlize(string):
-	# TODO: implement unhtmlize
+	# TODO: expand replacement table
+	replace = {'\n': ' ',
+	           '\t': ' ',
+	           '&quot;': '"',
+	           '&amp;': '&',
+	           '&lt;': '<',
+	           '&gt': '>'}
+	for i in replace:
+		if i in string:
+			string = string.replace(i, replace[i])
 	return string
 
 def gettitle(f):
