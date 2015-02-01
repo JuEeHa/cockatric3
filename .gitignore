@@ -1,3 +1,4 @@
 *.pyc
 startcmd.txt
 ircbot.sh
+blacklist.txt

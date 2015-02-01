@@ -1,6 +1,46 @@
 import urllib
+import re
+import threading
 
-concmd = []
+concmd = ['/load_replacetable', '/load_blacklist']
+
+unhtml_replace_lock = threading.Lock()
+unhtml_replace = None
+
+blacklist_lock = threading.Lock()
+blacklist = None
+
+def load_replacetable():
+	global unhtml_replace, unhtml_replace_lock
+	
+	unhtml_replace_lock.acquire()
+	unhtml_replace = {}
+	
+	f = open("unhtml_replace.txt", 'r')
+	
+	for line in f:
+		if line != '':
+			replaced, replacer = line.split()
+			unhtml_replace[replaced] = replacer
+	
+	f.close()
+	unhtml_replace_lock.release()
+
+def load_blacklist():
+	global blacklist, blacklist_lock
+	blacklist_lock.acquire()
+	blacklist = []
+	
+	f = open("blacklist.txt", 'r')
+	
+	for line in f:
+		while line != '' and  line[-1] == '\n':
+			line = line[:-1]
+		if line != '':
+			blacklist.append(re.compile('^' + line + '$'))
+	
+	f.close()
+	blacklist_lock.release()
 
 def matchprotocol(string, protocol):
 	return len(protocol) <= len(string) and string[:len(protocol)] == protocol
@@ -23,16 +63,16 @@ def geturls(message):
 	return urls
 
 def unhtmlize(string):
-	# TODO: expand replacement table
-	replace = {'\n': ' ',
-	           '\t': ' ',
-	           '&quot;': '"',
-	           '&amp;': '&',
-	           '&lt;': '<',
-	           '&gt': '>'}
-	for i in replace:
+	global unhtml_replace, unhtml_replace_lock
+	unhtml_replace_lock.acquire()
+	
+	string = string.replace('\n', ' ').replace('\t', ' ')
+	
+	for i in unhtml_replace:
 		if i in string:
-			string = string.replace(i, replace[i])
+			string = string.replace(i, unhtml_replace[i])
+	
+	unhtml_replace_lock.release()
 	return string
 
 def gettitle(f):
@@ -47,6 +87,8 @@ def gettitle(f):
 	return unhtmlize(title)
 
 def parse(args):
+	global blacklist, blacklist_lock
+	
 	line, irc = args
 	line = line.split(' ')
 	nick = line[0].split('!')[0][1:]
@@ -56,10 +98,21 @@ def parse(args):
 		message = ' '.join([line[3][1:]] + line[4:])
 		urls = geturls(message)
 		for url in urls:
+			blacklisted = False
+			blacklist_lock.acquire()
+			for i in blacklist:
+				if i.match(url):
+					blacklisted = True
+					break
+			blacklist_lock.release()
+			if blacklisted:
+				continue
+			
 			try:
 				f = urllib.urlopen(url)
 			except IOError:
 				continue
+			
 			if f.info().gettype() == 'text/html':
 				title = gettitle(f)
 				domain = getdomain(url)
@@ -67,4 +120,10 @@ def parse(args):
 			f.close()
 
 def execcmd(cmd):
-	return
+	if cmd[0] == '/load_replacetable':
+		load_replacetable()
+	elif cmd[0] == '/load_blacklist':
+		load_blacklist()
+
+load_replacetable()
+load_blacklist()
