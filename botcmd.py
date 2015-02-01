@@ -47,7 +47,10 @@ def parse(args):
 		message = ' '.join([line[3][1:]] + line[4:])
 		urls = geturls(message)
 		for url in urls:
-			f = urllib.urlopen(url)
+			try:
+				f = urllib.urlopen(url)
+			except IOError:
+				continue
 			if f.info().gettype() == 'text/html':
 				title = gettitle(f)
 				domain = getdomain(url)
