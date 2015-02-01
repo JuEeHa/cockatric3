@@ -67,6 +67,8 @@ def unhtmlize(string):
 	unhtml_replace_lock.acquire()
 	
 	string = string.replace('\n', ' ').replace('\t', ' ')
+	while '  ' in string:
+		string = string.replace('  ', ' ')
 	
 	for i in unhtml_replace:
 		if i in string:
