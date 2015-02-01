@@ -160,7 +160,7 @@ class Threadwrapper(threading.Thread):
 		self.func(self.arg)
 
 if len(sys.argv)!=5:
-	print 'Usage: '+sys.argv[0]+' server port channel nick'
+	print('Usage: '+sys.argv[0]+' server port channel nick')
 else:
 	keych=Channel()
 	logch=Channel()

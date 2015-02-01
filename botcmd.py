@@ -37,7 +37,8 @@ def gettitle(f):
 		title = page[:page.index('</title>')]
 	return unhtmlize(title)
 
-def parse((line, irc)):
+def parse(args):
+	line, irc = args
 	line = line.split(' ')
 	nick = line[0].split('!')[0][1:]
 	chan = line[2] if line[2][0]=='#' else nick
