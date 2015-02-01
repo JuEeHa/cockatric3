@@ -1,30 +1,14 @@
 import urllib
 import re
 import threading
+import HTMLParser
 
-concmd = ['/load_replacetable', '/load_blacklist']
-
-unhtml_replace_lock = threading.Lock()
-unhtml_replace = None
+concmd = ['/load_blacklist']
 
 blacklist_lock = threading.Lock()
 blacklist = None
 
-def load_replacetable():
-	global unhtml_replace, unhtml_replace_lock
-	
-	unhtml_replace_lock.acquire()
-	unhtml_replace = {}
-	
-	f = open("unhtml_replace.txt", 'r')
-	
-	for line in f:
-		if line != '':
-			replaced, replacer = line.split()
-			unhtml_replace[replaced] = replacer
-	
-	f.close()
-	unhtml_replace_lock.release()
+html_unescape = HTMLParser.HTMLParser().unescape
 
 def load_blacklist():
 	global blacklist, blacklist_lock
@@ -63,19 +47,10 @@ def geturls(message):
 	return urls
 
 def unhtmlize(string):
-	global unhtml_replace, unhtml_replace_lock
-	unhtml_replace_lock.acquire()
-	
 	string = string.replace('\n', ' ').replace('\t', ' ')
 	while '  ' in string:
 		string = string.replace('  ', ' ')
-	
-	for i in unhtml_replace:
-		if i in string:
-			string = string.replace(i, unhtml_replace[i])
-	
-	unhtml_replace_lock.release()
-	return string
+	return html_unescape(string)
 
 def gettitle(f):
 	page = f.read()
@@ -122,10 +97,7 @@ def parse(args):
 			f.close()
 
 def execcmd(cmd):
-	if cmd[0] == '/load_replacetable':
-		load_replacetable()
-	elif cmd[0] == '/load_blacklist':
+	if cmd[0] == '/load_blacklist':
 		load_blacklist()
 
-load_replacetable()
 load_blacklist()
