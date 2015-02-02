@@ -53,7 +53,6 @@ class Connhandler(threading.Thread):
 		self.inpc=inpc
 		self.logc=logc
 	def send(self,s):
-		s=s.encode('utf-8')
 		if len(s)>512: s=s[:512]
 		self.sock.send(s+'\r\n')
 		if s.split(' ')[0]!='PONG':
