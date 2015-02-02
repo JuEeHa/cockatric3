@@ -66,7 +66,7 @@ def gettitle(f):
 def parse((line, irc)):
 	global blacklist, blacklist_lock
 	
-	line = line.split(' ')
+	line = line.replace('\x01', '').split(' ')
 	nick = line[0].split('!')[0][1:]
 	chan = line[2] if line[2][0]=='#' else nick
 	
