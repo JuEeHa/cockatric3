@@ -63,6 +63,11 @@ def gettitle(f):
 		title = page[:page.index('</title>')]
 	return unhtmlize(title)
 
+def sanitize(string):
+	for i in ['\n', '\r'] + [chr(i) for i in range(32)]:
+		string = string.replace(i, '')
+	return string
+
 def parse((line, irc)):
 	global blacklist, blacklist_lock
 	
@@ -90,8 +95,8 @@ def parse((line, irc)):
 				continue
 			
 			if f.info().gettype() == 'text/html':
-				title = gettitle(f)
-				domain = getdomain(url)
+				title = sanitize(gettitle(f))
+				domain = sanitize(getdomain(url))
 				irc.msg(chan, '%s: %s' % (domain, title))
 			f.close()
 
