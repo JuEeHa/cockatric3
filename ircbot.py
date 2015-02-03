@@ -53,6 +53,7 @@ class Connhandler(threading.Thread):
 		self.inpc=inpc
 		self.logc=logc
 	def send(self,s):
+		s=s.replace('\n','\\n').replace('\r','\\r') # Sanitize output
 		if len(s)>512: s=s[:512]
 		self.sock.send(s+'\r\n')
 		if s.split(' ')[0]!='PONG':
@@ -160,7 +161,7 @@ class Threadwrapper(threading.Thread):
 		self.func(self.arg)
 
 if len(sys.argv)!=5:
-	print('Usage: '+sys.argv[0]+' server port channel nick')
+	print 'Usage: '+sys.argv[0]+' server port channel nick'
 else:
 	keych=Channel()
 	logch=Channel()
