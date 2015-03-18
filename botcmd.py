@@ -70,6 +70,7 @@ def sanitize(string):
 
 def parse((line, irc)):
 	global blacklist, blacklist_lock
+	zwsp = '\xe2\x80\x8b'
 	
 	line = line.replace('\x01', '').split(' ')
 	nick = line[0].split('!')[0][1:]
@@ -77,6 +78,10 @@ def parse((line, irc)):
 	
 	if line[1] == 'PRIVMSG':
 		message = ' '.join([line[3][1:]] + line[4:])
+		
+		if message[:len(zwsp)] == zwsp:
+			return
+		
 		urls = geturls(message)
 		for url in urls:
 			blacklisted = False
@@ -97,7 +102,7 @@ def parse((line, irc)):
 			if f.info().gettype() == 'text/html':
 				title = sanitize(gettitle(f))
 				domain = sanitize(getdomain(url))
-				irc.msg(chan, '%s: %s' % (domain, title))
+				irc.msg(chan, zwsp + '%s: %s' % (domain, title))
 			f.close()
 
 def execcmd(cmd):
