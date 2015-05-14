@@ -50,7 +50,7 @@ def unhtmlize(string):
 	string = string.replace('\n', ' ').replace('\t', ' ')
 	while '  ' in string:
 		string = string.replace('  ', ' ')
-	return html_unescape(string)
+	return html_unescape(string.decode('utf-8')).encode('utf-8')
 
 def gettitle(f):
 	page = f.read()
