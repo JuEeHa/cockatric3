@@ -66,7 +66,7 @@ def gettitle(f):
 def sanitize(string):
 	for i in ['\n', '\r'] + [chr(i) for i in range(32)]:
 		string = string.replace(i, '')
-	return string
+	return string.strip()
 
 def parse((line, irc)):
 	global blacklist, blacklist_lock
